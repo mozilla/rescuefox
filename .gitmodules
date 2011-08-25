@@ -1,0 +1,3 @@
+[submodule "external/paladin"]
+	path = external/paladin
+	url = git@github.com:alankligman/paladin.git
