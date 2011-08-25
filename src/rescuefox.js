@@ -1,3 +1,4 @@
+/*global paladin */
 (function() {
 
 var Game = function( options ) {
@@ -24,8 +25,7 @@ var Game = function( options ) {
     this.run = function() {
         engine.run();
     };
-
-}
+};
 
 document.addEventListener( 'DOMContentLoaded', function( event ) {
     paladin.create( { debug: true },

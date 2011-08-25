@@ -10,8 +10,8 @@
     }
   });
   
-  test("can find the document body element", function() {
-    S("body").exists();
+  test("player sees a game field (i.e. canvas element)", function() {
+    S("canvas").exists();
   });
   
 })();
