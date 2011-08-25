@@ -1,4 +1,4 @@
-function() {
+(function() {
 
 var Game = function( options ) {
 
@@ -33,7 +33,7 @@ document.addEventListener( 'DOMContentLoaded', function( event ) {
             var game = new Game( { engine: engineInstance } );
             game.run();   
         }
-    } );
+    );
 }, false );
 
-}();
+})();
