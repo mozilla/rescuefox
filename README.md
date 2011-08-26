@@ -12,3 +12,6 @@ together, and the "master" branch for tagged, production releases.
 We expect to have live instances of both the develop and master branches
 for playing up before too long.
 
+# Credits
+
+* The image we use for our Skybox comes from NASA's image of the day archive
