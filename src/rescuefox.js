@@ -21,6 +21,8 @@ var Game = function( options ) {
     Fox.constructor = Fox;
 
     var scene = new engine.Scene();
+    scene.graphics.setSkyBox(new engine.graphics.CubicVR.SkyBox({
+      texture: "../assets/space_skybox.jpg"}));
 
     this.run = function() {
         engine.run();
