@@ -27,13 +27,21 @@ var Game = function( options ) {
     this.run = function() {
         engine.run();
     };
+
+    engine.sound.Track.load({
+        url: "../assets/music/perfect-blind-ethernion-ii.ogg",
+        callback: function( track ) {
+            engine.sound.music.add( 'bg-music', track );
+            engine.sound.music.play( 'bg-music' );
+        }
+    });
 };
 
 document.addEventListener( 'DOMContentLoaded', function( event ) {
     paladin.create( { debug: true },
         function( engineInstance ) {
             var game = new Game( { engine: engineInstance } );
-            game.run();   
+            game.run();
         }
     );
 }, false );
