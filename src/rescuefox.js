@@ -10,10 +10,26 @@ var Game = function( options ) {
     Ship.prototype = new engine.Entity();
     Ship.constructor = Ship;
 
+    var asteroidCollada = CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids/"),
+    asteroidMeshes = [
+      asteroidCollada.getSceneObject( "asteroid1" ).getMesh().clean(),
+      asteroidCollada.getSceneObject( "asteroid2" ).getMesh().clean(),
+      asteroidCollada.getSceneObject( "asteroid3" ).getMesh().clean()
+    ];
+
     var Asteroid = function( options ) {
+        var entity = this.entity = new engine.Entity();
+
+        var asteroidMesh = asteroidMeshes[ Math.floor( Math.random() * asteroidMeshes.length ) ];
+        var model = new engine.component.Model({
+            mesh: asteroidMesh
+        });
+
+        entity.addComponent( model );
+
+        this.spatial = entity.spatial;
+        this.setParent = entity.setParent;
     };
-    Asteroid.prototype = new engine.Entity();
-    Asteroid.constructor = Asteroid;
 
     var Fox = function( options ) {
     };
@@ -22,10 +38,21 @@ var Game = function( options ) {
 
     var scene = new engine.Scene();
     scene.graphics.setSkyBox(new engine.graphics.CubicVR.SkyBox({
-      texture: "../assets/space_skybox.jpg"}));
+      texture: "../assets/space_skybox.jpg"
+    }));
 
     this.run = function() {
         engine.run();
+        var asteroids = [];
+        for ( var i=0; i<10; ++i ) {
+            var asteroid = new Asteroid();
+            asteroid.spatial.position[0] = -20 + Math.random() * 50;
+            asteroid.spatial.position[1] = -2 + Math.random() * 4;
+            asteroid.spatial.position[2] = -20 + Math.random() * 50;
+            asteroid.setParent( scene );
+            asteroids.push( asteroid );
+        }
+        var mvc = new CubicVR.MouseViewController(CubicVR.getCanvas(), scene.graphics.camera);
     };
 
     engine.sound.Track.load({
