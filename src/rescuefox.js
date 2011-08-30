@@ -5,11 +5,6 @@ var Game = function( options ) {
 
     var engine = options.engine;
 
-    var Ship = function( options ) {
-    };
-    Ship.prototype = new engine.Entity();
-    Ship.constructor = Ship;
-
     var asteroidCollada = CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids/"),
     asteroidMeshes = [
       asteroidCollada.getSceneObject( "asteroid1" ).getMesh().clean(),
@@ -30,11 +25,6 @@ var Game = function( options ) {
         this.spatial = entity.spatial;
         this.setParent = entity.setParent;
     };
-
-    var Fox = function( options ) {
-    };
-    Fox.prototype = new engine.Entity();
-    Fox.constructor = Fox;
 
     var scene = new engine.Scene();
     scene.graphics.setSkyBox(new engine.graphics.CubicVR.SkyBox({
