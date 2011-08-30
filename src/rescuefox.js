@@ -39,7 +39,6 @@ var Game = function( options ) {
             asteroid.spatial.position[2] = -250 + Math.random()*500;
             asteroid.setParent( scene );
         }
-        window.foo = scene;
     };
 };
 
