@@ -40,6 +40,14 @@ var Game = function( options ) {
             asteroid.setParent( scene );
         }
     };
+
+    engine.sound.Track.load({
+        url: "../assets/music/perfect-blind-ethernion-ii.ogg",
+        callback: function( track ) {
+            engine.sound.music.add( 'bg-music', track );
+            engine.sound.music.play( 'bg-music' );
+        }
+    });
 };
 
 document.addEventListener( 'DOMContentLoaded', function( event ) {
