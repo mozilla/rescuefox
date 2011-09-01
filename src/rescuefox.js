@@ -5,12 +5,17 @@ var Game = function( options ) {
 
     var engine = options.engine;
 
-    var asteroidCollada = CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids/"),
-    asteroidMeshes = [
-      asteroidCollada.getSceneObject( "asteroid1" ).getMesh().clean(),
-      asteroidCollada.getSceneObject( "asteroid2" ).getMesh().clean(),
-      asteroidCollada.getSceneObject( "asteroid3" ).getMesh().clean()
-    ];
+    var asteroidCollada = engine.graphics.CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids/"),
+        asteroidMeshes = [
+            asteroidCollada.getSceneObject( "asteroid1" ).getMesh().clean(),
+            asteroidCollada.getSceneObject( "asteroid2" ).getMesh().clean(),
+            asteroidCollada.getSceneObject( "asteroid3" ).getMesh().clean()
+        ],
+        asteroidHulls = [
+            asteroidCollada.getSceneObject( "asteroid1hull" ).getMesh(),
+            asteroidCollada.getSceneObject( "asteroid2hull" ).getMesh(),
+            asteroidCollada.getSceneObject( "asteroid3hull" ).getMesh()
+        ];
 
     var Asteroid = function( options ) {
         var entity = this.entity = new engine.Entity();
@@ -31,6 +36,7 @@ var Game = function( options ) {
       texture: "../assets/space_skybox.jpg"
     }));
 
+    // Run the game.
     this.run = function() {
         engine.run();
         var asteroids = [];
