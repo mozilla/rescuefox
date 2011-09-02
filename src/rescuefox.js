@@ -8,23 +8,23 @@
 
 		var spawnObjs = 100;
 
-		function generateObjects() {
+		var generateObjects = function() {
 			var result = [];
 
-			var asteroidModels = CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids/");
-
+			var asteroidModels = CubicVR.loadCollada("../assets/asteroids/asteroids1.dae","../assets/asteroids");
+			
 			var asteroid1 = asteroidModels.getSceneObject("asteroid1").getMesh().clean();
 			var asteroid2 = asteroidModels.getSceneObject("asteroid2").getMesh().clean();
 			var asteroid3 = asteroidModels.getSceneObject("asteroid3").getMesh().clean();
 			var asteroid4 = asteroidModels.getSceneObject("asteroid4").getMesh().clean();
-
+			
 			// keep model data for these ones.. (no clean)
 			var asteroid1hull = asteroidModels.getSceneObject("asteroid1hull").getMesh();
 			var asteroid2hull = asteroidModels.getSceneObject("asteroid2hull").getMesh();
 			var asteroid3hull = asteroidModels.getSceneObject("asteroid3hull").getMesh();
 			var asteroid4hull = asteroidModels.getSceneObject("asteroid4hull").getMesh();
-
-			var envTex =  new CubicVR.Texture("../images/fract_reflections.jpg");
+			
+			var envTex =  new CubicVR.Texture("../assets/fract_reflections.jpg");
 
 			var sphereMesh = CubicVR.primitives.sphere({
 				radius: 1,
@@ -87,7 +87,7 @@
 		}
 
 
-		function spawnObjects(scene,physics,objlist) {
+		var spawnObjects = function (scene,physics,objlist) {
 
 			var nobjs = objlist.length-1;
 
@@ -137,7 +137,7 @@
 			}
 		}
 
-		function setupPlayer(scene,physics,playerObj) {
+		var setupPlayer = function (scene,physics,playerObj) {
 
 			var sceneObj = new CubicVR.SceneObject({
 				mesh:playerObj.mesh,
@@ -161,7 +161,8 @@
 
 			return rigidObj;
 		}
-
+		
+		
 
 		//----------- SCENE INIT:START -------------
 
@@ -200,8 +201,7 @@
 //		}));
 
 //		CubicVR.setSoftShadows(true);
-
-
+		
 		var floorMaterial = new CubicVR.Material({
 			specular:[0,0,0],
 			shininess: 0.9,
@@ -253,9 +253,9 @@
 		//----------- SCENE INIT:END -------------
 
 
-		var objlist = generateObjects();
+		var objlist = generateObjects();		
 		spawnObjects(scene,physics,objlist);
-
+		
 		var player = setupPlayer(scene,physics,objlist[0]);
 
 //		scene.camera.position = [20,20,20];
@@ -280,7 +280,7 @@
 			height:50,
 			blend:true,
 			tint:[1.0,0.4,0],
-			texture:new CubicVR.Texture('../images/target.png')
+			texture:new CubicVR.Texture('../assets/target.png')
 		});
 
 		var target2 = new CubicVR.View({
@@ -288,7 +288,7 @@
 			height:50,
 			blend:true,
 			tint:[0,0.4,1],
-			texture:new CubicVR.Texture('../images/target.png')
+			texture:new CubicVR.Texture('../assets/target.png')
 		});
 
 		layout.addSubview(target1);
@@ -467,12 +467,7 @@
 
             layout.render();
         });
-
-		// Run the game.
-		this.run = function() {
-			engine.run();
-		};
-
+        
 		engine.sound.Track.load({
 			url: "../assets/music/perfect-blind-ethernion-ii.ogg",
 			callback: function( track ) {
@@ -480,6 +475,11 @@
 				engine.sound.music.play( 'bg-music' );
 			}
 		});
+
+		// Run the game.
+		this.run = function() {
+			engine.run();
+		};
 		
 	};
 
@@ -487,6 +487,7 @@
 		paladin.create( { debug: true },
 				function( engineInstance ) {
 			var game = new Game( { engine: engineInstance } );
+			console.log( "Starting game" );
 			game.run();
 		}
 		);
