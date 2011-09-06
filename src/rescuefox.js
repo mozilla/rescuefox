@@ -7,6 +7,7 @@
 		var CubicVR = engine.graphics.CubicVR;
 
 		var spawnObjs = 100;
+    var cameraOffset = [ 0, 2, 4 ];
 
 		var generateObjects = function() {
 			var result = [];
@@ -139,12 +140,14 @@
 
 		var setupPlayer = function (scene,physics,playerObj) {
 
+			var astronautCollada = CubicVR.loadCollada("../assets/spacesuit-scene.dae","../assets/");
+			var astronautMesh = astronautCollada.getSceneObject("astronaut").getMesh().clean();
+
 			var sceneObj = new CubicVR.SceneObject({
-				mesh:playerObj.mesh,
+				mesh: astronautMesh,
 				position:[0,0,0],
 				rotation:[0,0,0]
 			});
-
 
 			var rigidObj = new CubicVR.RigidBody(sceneObj, {
 				type: CubicVR.enums.physics.body.DYNAMIC,
@@ -176,8 +179,6 @@
 		scene.setSkyBox(new CubicVR.SkyBox({texture:"../assets/space_skybox.jpg"}));
 
 		// set initial camera position and target
-		scene.camera.position = [0.01,0.01,0.01];
-		scene.camera.target = [0, 0, 0];
 		scene.camera.setClip(0.1,2000);
 
 		// Add a simple directional light
@@ -259,12 +260,12 @@
 		var player = setupPlayer(scene,physics,objlist[0]);
 
 //		scene.camera.position = [20,20,20];
-		scene.camera.setParent(player.getSceneObject());
+//		scene.camera.setParent(player.getSceneObject());
 //		scene.camera.setTargeted(false);
 
 //		player.setAngularFactor(0);
 		player.activate(true);
-		player.getSceneObject().visible = false;
+		player.getSceneObject().visible = true;
 
 
 		//----------- LAYOUT:START -------------
@@ -308,21 +309,32 @@
 		var lastResult = false;
 		var downPos;
 
+    var zoom = 10;
+    function zoomCamera() {
+        var vec3 = CubicVR.vec3;
+        scene.camera.position = vec3.add(scene.camera.target, vec3.multiply(vec3.normalize(vec3.subtract(scene.camera.position, scene.camera.target)), zoom));
+    }
 
 		// initialize a mouse view controller
 		var mvc = new CubicVR.MouseViewController(canvas, scene.camera);
-
 
 		mvc.setEvents({
 			mouseMove: function (ctx, mpos, mdelta, keyState) {
 
 				if (!ctx.mdown) return;
 
-				ctx.orbitView(mdelta);
-				//          ctx.panView(mdelta);
+        var vec3 = CubicVR.vec3;
+        var dv = vec3.subtract(scene.camera.target, scene.camera.position);
+        var dist = vec3.length(dv);
+
+        scene.camera.position = vec3.moveViewRelative(scene.camera.position, scene.camera.target, -dist * mdelta[0] / 300.0, 0);
+        scene.camera.position[1] += dist * mdelta[1] / 300.0;
+
+        scene.camera.position = vec3.add(scene.camera.target, vec3.multiply(vec3.normalize(vec3.subtract(scene.camera.position, scene.camera.target)), dist));
 			},
 			mouseWheel: function (ctx, mpos, wdelta, keyState) {
-//				ctx.zoomView(wdelta);
+        zoom -= wdelta / 1000.0;
+        zoomCamera();
 			},
 			mouseDown: function (ctx, mpos, keyState) {
 				downPos = mpos;    
@@ -353,22 +365,6 @@
 
 					if (result && !point1) {
 						point1 = result;
-
-						/*                            pickConstraint = new CubicVR.Constraint({
-                                type: CubicVR.enums.physics.constraint.P2P,
-                                rigidBodyA: player,
-                                positionA: [0,0,0],
-                                rigidBodyB: point1.rigidBody.isStatic()?point1.rigidBody:null,
-                                positionB: point1.rigidBody.isStatic()?point1.position:[0,0,0],
-                                maxImpulse: 0.003,
-                                strength: 0.8
-                            });*/
-
-//						physics.addConstraint(pickConstraint);                       
-
-						//                        pickDist = CubicVR.vec3.length(CubicVR.vec3.subtract(scene.camera.position,result.position));                        
-						//                        pickConstraint.setPosition(scene.camera.unProject(mpos[0],mpos[1],pickDist));
-
 					}
 				} 
 			},
@@ -406,67 +402,70 @@
 
 		var kbd = CubicVR.enums.keyboard;
 		
-        CubicVR.MainLoop(function(timer, gl) {
-            var seconds = timer.getSeconds();
+    scene.camera.position = [ 0, 1000, 1000 ];
+    CubicVR.MainLoop(function(timer, gl) {
+        var seconds = timer.getSeconds();
 
-            if (!player.isActive()) { 
-                player.activate(); 
-            }
+        if (!player.isActive()) { 
+            player.activate(); 
+        }
+
+        var angV = player.getAngularVelocity();
+        angV = CubicVR.vec3.subtract(angV,CubicVR.vec3.multiply(angV,timer.getLastUpdateSeconds()*5));
+        player.setAngularVelocity(angV);
+
+        if (mvc.isKeyPressed(kbd.KEY_W)) {
+            player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),0.001));
+        }
+        if (mvc.isKeyPressed(kbd.KEY_S)) {
+            player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),-0.001));
+        }
+
+        if (point1) {
+            var tetherVec = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),player.getSceneObject().position);
+            var tetherDist = CubicVR.vec3.length(tetherVec);
+            var tetherDir = CubicVR.vec3.normalize(tetherVec);
             
-            var angV = player.getAngularVelocity();
-            angV = CubicVR.vec3.subtract(angV,CubicVR.vec3.multiply(angV,timer.getLastUpdateSeconds()*5));
-            player.setAngularVelocity(angV);
-
-            if (mvc.isKeyPressed(kbd.KEY_W)) {
-                player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),0.001));
-            }
-            if (mvc.isKeyPressed(kbd.KEY_S)) {
-                player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),-0.001));
-            }
-
-            if (point1) {
-                var tetherVec = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),player.getSceneObject().position);
-                var tetherDist = CubicVR.vec3.length(tetherVec);
-                var tetherDir = CubicVR.vec3.normalize(tetherVec);
-                
-                
-                var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
-                player.applyImpulse(tetherImpulse);
-
-                if (tetherDist < 6) {
-                    var linV = player.getLinearVelocity();
-                    linV = CubicVR.vec3.subtract(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*10.0));
-                    player.setLinearVelocity(linV);
-                                                
-                }
-            }
-
-            physics.stepSimulation(timer.getLastUpdateSeconds());
-/*                    if (seconds > 15) {
-                physics.reset();                    
-                timer.setSeconds(0);
-            }*/
             
-            scene.updateShadows();
-            scene.render();
-            
+            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
+            player.applyImpulse(tetherImpulse);
 
-             if (point1) {
-                acquireTarget(point1,target1);
-             } else {
-                target1.x = -target1.width;
-                target1.y = -target1.height;
-             }
-             
-             if (point2) {
-                acquireTarget(point2,target2);
-             } else {
-                target2.x = -target2.width;
-                target2.y = -target2.height;
-             }
+            if (tetherDist < 6) {
+                var linV = player.getLinearVelocity();
+                linV = CubicVR.vec3.subtract(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*10.0));
+                player.setLinearVelocity(linV);
+                                            
+            }
+        }
 
-            layout.render();
-        });
+        physics.stepSimulation(timer.getLastUpdateSeconds());
+
+        var playerPosition = player.getSceneObject().position,
+            camPos = scene.camera.position,
+            dt = timer.getLastUpdateSeconds();
+        scene.camera.target = playerPosition;
+        zoomCamera();
+        
+        scene.updateShadows();
+        scene.render();
+        
+
+         if (point1) {
+            acquireTarget(point1,target1);
+         } else {
+            target1.x = -target1.width;
+            target1.y = -target1.height;
+         }
+         
+         if (point2) {
+            acquireTarget(point2,target2);
+         } else {
+            target2.x = -target2.width;
+            target2.y = -target2.height;
+         }
+
+        layout.render();
+    });
         
 		engine.sound.Track.load({
 			url: "../assets/music/perfect-blind-ethernion-ii.ogg",
