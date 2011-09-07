@@ -163,7 +163,6 @@
 			return rigidObj;
 		};
 		
-		
 
 		//----------- SCENE INIT:START -------------
 
@@ -249,8 +248,16 @@
 		// Add our scene to the window resize list
 		CubicVR.addResizeable(scene);
 
+
 		//----------- SCENE INIT:END -------------
 
+
+		//----------- PARTICLES:START -------------
+    var ps = null;
+    var maxParticles = 8000;
+    ps = new CubicVR.ParticleSystem(maxParticles,false,new CubicVR.Texture("../assets/beam.png"),canvas.width,canvas.height,true);
+
+		//----------- PARTICLES:END -------------
 
 		var objlist = generateObjects();		
 		spawnObjects(scene,physics,objlist);
@@ -261,6 +268,7 @@
 //		scene.camera.setParent(player.getSceneObject());
 //		scene.camera.setTargeted(false);
 
+//    uncomment to force player to stay upright.
 //		player.setAngularFactor(0);
 		player.activate(true);
 		player.getSceneObject().visible = true;
@@ -446,14 +454,44 @@
         physics.stepSimulation(timer.getLastUpdateSeconds());
 
         var playerPosition = player.getSceneObject().position,
+            playerLastPosition = player.getSceneObject().lposition,
+            playerSceneObj = player.getSceneObject(),
             camPos = scene.camera.position,
             dt = timer.getLastUpdateSeconds();
         scene.camera.target = playerPosition;
+        scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.subtract(playerPosition,playerLastPosition));
         zoomCamera();
         
         scene.updateShadows();
         scene.render();
         
+        // Draw grappling beam
+        if (point1) {
+          var nominalBeamStep = 0.2;
+
+          var beamVector = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),playerPosition);
+          var beamLength = CubicVR.vec3.length(beamVector);
+          var numPoints = Math.floor(beamLength/nominalBeamStep);
+          if (numPoints > maxParticles) numPoints = maxParticles;
+
+          ps.numParticles = numPoints;          
+
+          if (numPoints != 0) {
+            var linStep = CubicVR.vec3.multiply(beamVector,1.0/numPoints);
+            var pos = playerPosition.slice(0);  
+            for (var i = 0, iMax = numPoints*3; i < iMax; i+=3) {
+              ps.arPoints[i] = pos[0];
+              ps.arPoints[i+1] = pos[1];
+              ps.arPoints[i+2] = pos[2];
+              pos[0]+=linStep[0];
+              pos[1]+=linStep[1];
+              pos[2]+=linStep[2];
+            }
+            ps.updatePoints();
+            ps.draw(scene.camera.mvMatrix, scene.camera.pMatrix);
+          }
+         }
+         // end grappling line
 
          if (point1) {
             acquireTarget(point1,target1);
