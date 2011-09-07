@@ -1,4 +1,4 @@
-/*global paladin */
+/*global console,paladin */
 (function() {
 
 	var Game = function( options ) {
@@ -403,7 +403,7 @@
 		var kbd = CubicVR.enums.keyboard;
 		
     scene.camera.position = [ 0, 1000, 1000 ];
-    CubicVR.MainLoop(function(timer, gl) {
+    var mainLoop = new CubicVR.MainLoop(function(timer, gl) {
         var seconds = timer.getSeconds();
 
         if (!player.isActive()) { 
@@ -475,9 +475,36 @@
 			}
 		});
 
+    function GameTimer () {
+    }
+    GameTimer.prototype = {
+      intervalId: null,
+      secondsLeft: 90,
+      start: function gameTimerStart() {
+        this.intervalId = setInterval(this.update.bind(this), 1000);
+      },      
+      stop: function gameTimerStop() {
+        clearInterval(this.intervalId);
+      },
+      update: function gameTimerUpdate() {
+        this.secondsLeft -= 1;
+        document.getElementById("secondsLeft").textContent = this.secondsLeft;
+
+        if (!this.secondsLeft) {
+          this.stop();
+          engine.tasker.terminate();
+          mainLoop.setPaused(true);
+          CubicVR.setMainLoop(null);
+        }
+      }
+    };
+    
+    var gameTimer = new GameTimer();
+
 		// Run the game.
 		this.run = function() {
-			engine.run();
+      gameTimer.start();
+      engine.run();
 		};
 		
 	};
