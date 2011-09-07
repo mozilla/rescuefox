@@ -6,10 +6,10 @@
 		var engine = options.engine;
 		var CubicVR = engine.graphics.CubicVR;
 
-		var spawnObjs = 100;
-    var cameraOffset = [ 0, 2, 4 ];
+    // Specify a different number of asteroids via index.html?# on the url, or use default
+		var spawnObjs = (window.location.search.substr(1) | 0) || 100;
 
-    function isNaN(n) { return n!=n; }
+    var cameraOffset = [ 0, 2, 4 ];
 
 		var generateObjects = function() {
 			var result = [];
@@ -93,11 +93,6 @@
 		var spawnObjects = function (scene,physics,objlist) {
 
 			var nobjs = objlist.length-1;
-
-			var b = window.location.search.substr(1) | 0;
-			if (b && !isNaN(b)) {
-        spawnObjs = b;
-      }
 
 			for (var i = 0; i < spawnObjs; i++) {
 				var src = objlist[i%nobjs+1];
