@@ -344,7 +344,9 @@
 			mouseUp: function (ctx,mpos,keyState) {
 				var dx = mpos[0]-downPos[0], dy = mpos[1]-downPos[1];
 
-				if (Math.sqrt(dx*dx+dy*dy)<4) {
+        var maxPixelsMoved = 20;  // Maximum number of pixels the cursor may move before it's not considered for ray testing.
+
+				if (Math.sqrt(dx*dx+dy*dy)<maxPixelsMoved) {
 
 					var rayTo = scene.camera.unProject(mpos[0],mpos[1]);
 
@@ -428,11 +430,16 @@
             var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
             player.applyImpulse(tetherImpulse);
 
+            var linV = player.getLinearVelocity();
+
             if (tetherDist < 6) {
-                var linV = player.getLinearVelocity();
                 linV = CubicVR.vec3.subtract(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*10.0));
-                player.setLinearVelocity(linV);
-                                            
+                player.setLinearVelocity(linV);                                            
+            } else {
+                // nudge the current linear velocity towards the target to prevent orbital swing
+                linV = CubicVR.vec3.add(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*-0.4));  
+                
+                player.setLinearVelocity(linV);                                                          
             }
         }
 
