@@ -15,9 +15,9 @@
 TOOLS_DIR := ./tools
 RESCUEFOX := ./src/rescuefox.js
 
+check-lint:
+	@@$(JSSHELL) -f $(TOOLS_DIR)/jshint.js $(TOOLS_DIR)/jshint-cmdline.js < $(RESCUEFOX)
+
 submodule:
 	@@git submodule update --init --recursive
 	@@git submodule status --recursive
-
-check-lint:
-	@@$(JSSHELL) -f $(TOOLS_DIR)/jshint.js $(TOOLS_DIR)/jshint-cmdline.js < $(RESCUEFOX)
