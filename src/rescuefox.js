@@ -6,7 +6,9 @@
 		var engine = options.engine;
 		var CubicVR = engine.graphics.CubicVR;
 
-		var spawnObjs = 100;
+    // Specify a different number of asteroids via index.html?# on the url, or use default
+		var spawnObjs = (window.location.search.substr(1) | 0) || 100;
+
     var cameraOffset = [ 0, 2, 4 ];
 
 		var generateObjects = function() {
@@ -85,16 +87,12 @@
 			result.push({mesh:asteroid4,collision:asteroid4Collision});
 
 			return result;
-		}
+		};
 
 
 		var spawnObjects = function (scene,physics,objlist) {
 
 			var nobjs = objlist.length-1;
-
-			var b = parseInt(window.location.search.substr(1),10);
-			if (b && !(b!=b)) spawnObjs = b;
-
 
 			for (var i = 0; i < spawnObjs; i++) {
 				var src = objlist[i%nobjs+1];
@@ -136,7 +134,7 @@
 				physics.bindRigidBody(rigidObj);
 
 			}
-		}
+		};
 
 		var setupPlayer = function (scene,physics,playerObj) {
 
@@ -163,7 +161,7 @@
 //			rigidObj.setAngularFactor(0);
 
 			return rigidObj;
-		}
+		};
 		
 		
 
@@ -208,7 +206,7 @@
 			shininess: 0.9,
 			env_amount: 1.0,
 			textures: {
-				color:  new CubicVR.Texture("../assets/6583-diffuse.jpg"),
+				color:  new CubicVR.Texture("../assets/6583-diffuse.jpg")
 			}
 		});
 
@@ -224,7 +222,7 @@
 		var floorObject = new CubicVR.SceneObject({
 			mesh: floorMesh,
 			scale: [100, 0.2, 100],
-			position: [0, -5, 0],
+			position: [0, -5, 0]
 		});
 
 		floorObject.shadowCast = false;
