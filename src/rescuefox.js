@@ -163,7 +163,6 @@
 			return rigidObj;
 		};
 		
-		
 
 		//----------- SCENE INIT:START -------------
 
@@ -249,8 +248,16 @@
 		// Add our scene to the window resize list
 		CubicVR.addResizeable(scene);
 
+
 		//----------- SCENE INIT:END -------------
 
+
+		//----------- PARTICLES:START -------------
+    var ps = null;
+    var maxParticles = 8000;
+    ps = new CubicVR.ParticleSystem(maxParticles,false,new CubicVR.Texture("../assets/beam.png"),canvas.width,canvas.height,true);
+
+		//----------- PARTICLES:END -------------
 
 		var objlist = generateObjects();		
 		spawnObjects(scene,physics,objlist);
@@ -261,6 +268,7 @@
 //		scene.camera.setParent(player.getSceneObject());
 //		scene.camera.setTargeted(false);
 
+//    uncomment to force player to stay upright.
 //		player.setAngularFactor(0);
 		player.activate(true);
 		player.getSceneObject().visible = true;
@@ -344,7 +352,9 @@
 			mouseUp: function (ctx,mpos,keyState) {
 				var dx = mpos[0]-downPos[0], dy = mpos[1]-downPos[1];
 
-				if (Math.sqrt(dx*dx+dy*dy)<4) {
+        var maxPixelsMoved = 20;  // Maximum number of pixels the cursor may move before it's not considered for ray testing.
+
+				if (Math.sqrt(dx*dx+dy*dy)<maxPixelsMoved) {
 
 					var rayTo = scene.camera.unProject(mpos[0],mpos[1]);
 
@@ -428,25 +438,60 @@
             var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
             player.applyImpulse(tetherImpulse);
 
+            var linV = player.getLinearVelocity();
+
             if (tetherDist < 6) {
-                var linV = player.getLinearVelocity();
                 linV = CubicVR.vec3.subtract(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*10.0));
-                player.setLinearVelocity(linV);
-                                            
+                player.setLinearVelocity(linV);                                            
+            } else {
+                // nudge the current linear velocity towards the target to prevent orbital swing
+                linV = CubicVR.vec3.add(linV,CubicVR.vec3.multiply(linV,timer.getLastUpdateSeconds()*-0.4));  
+                
+                player.setLinearVelocity(linV);                                                          
             }
         }
 
         physics.stepSimulation(timer.getLastUpdateSeconds());
 
         var playerPosition = player.getSceneObject().position,
+            playerLastPosition = player.getSceneObject().lposition,
+            playerSceneObj = player.getSceneObject(),
             camPos = scene.camera.position,
             dt = timer.getLastUpdateSeconds();
         scene.camera.target = playerPosition;
+        scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.subtract(playerPosition,playerLastPosition));
         zoomCamera();
         
         scene.updateShadows();
         scene.render();
         
+        // Draw grappling beam
+        if (point1) {
+          var nominalBeamStep = 0.2;
+
+          var beamVector = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),playerPosition);
+          var beamLength = CubicVR.vec3.length(beamVector);
+          var numPoints = Math.floor(beamLength/nominalBeamStep);
+          if (numPoints > maxParticles) numPoints = maxParticles;
+
+          ps.numParticles = numPoints;          
+
+          if (numPoints != 0) {
+            var linStep = CubicVR.vec3.multiply(beamVector,1.0/numPoints);
+            var pos = playerPosition.slice(0);  
+            for (var i = 0, iMax = numPoints*3; i < iMax; i+=3) {
+              ps.arPoints[i] = pos[0];
+              ps.arPoints[i+1] = pos[1];
+              ps.arPoints[i+2] = pos[2];
+              pos[0]+=linStep[0];
+              pos[1]+=linStep[1];
+              pos[2]+=linStep[2];
+            }
+            ps.updatePoints();
+            ps.draw(scene.camera.mvMatrix, scene.camera.pMatrix);
+          }
+         }
+         // end grappling line
 
          if (point1) {
             acquireTarget(point1,target1);
