@@ -24,10 +24,3 @@ body {
   right: 30px;
   top: 30px;
 }
-
-#gameCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 0;
-}

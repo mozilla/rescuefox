@@ -539,7 +539,7 @@
           mainLoop.setPaused(true);
           CubicVR.setMainLoop(null);
           
-          document.getElementById("gameCanvas").style.zIndex = -1;
+          document.getElementsByTagName("canvas")[0].style.zIndex = -1;
         }
       }
     };
@@ -556,12 +556,7 @@
 
 	document.addEventListener( 'DOMContentLoaded', function( event ) {
 
-    // make sure we have a properly sized canvas that we can easily tweak later
-	  var gameCanvas = document.getElementById("gameCanvas");
-	  gameCanvas.width = window.innerWidth;
-	  gameCanvas.height = window.innerHeight;
-
-		paladin.create( { debug: true, graphics: { canvas: gameCanvas }}, 
+		paladin.create( { debug: true }, 
 		  function( engineInstance ) {
 			  var game = new Game( { engine: engineInstance } );
 			  console.log( "Starting game" );
