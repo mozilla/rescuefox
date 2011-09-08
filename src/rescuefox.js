@@ -9,8 +9,6 @@
     // Specify a different number of asteroids via index.html?# on the url, or use default
 		var spawnObjs = (window.location.search.substr(1) | 0) || 100;
 
-    var cameraOffset = [ 0, 2, 4 ];
-
 		var generateObjects = function() {
 			var result = [];
 
@@ -264,10 +262,6 @@
 		
 		var player = setupPlayer(scene,physics,objlist[0]);
 
-//		scene.camera.position = [20,20,20];
-//		scene.camera.setParent(player.getSceneObject());
-//		scene.camera.setTargeted(false);
-
 //    uncomment to force player to stay upright.
 //		player.setAngularFactor(0);
 		player.activate(true);
@@ -328,19 +322,11 @@
 			mouseMove: function (ctx, mpos, mdelta, keyState) {
 
 				if (!ctx.mdown) return;
+        mvc.orbitView( mdelta );
 
-        var vec3 = CubicVR.vec3;
-        var dv = vec3.subtract(scene.camera.target, scene.camera.position);
-        var dist = vec3.length(dv);
-
-        scene.camera.position = vec3.moveViewRelative(scene.camera.position, scene.camera.target, -dist * mdelta[0] / 300.0, 0);
-        scene.camera.position[1] += dist * mdelta[1] / 300.0;
-
-        scene.camera.position = vec3.add(scene.camera.target, vec3.multiply(vec3.normalize(vec3.subtract(scene.camera.position, scene.camera.target)), dist));
 			},
 			mouseWheel: function (ctx, mpos, wdelta, keyState) {
-        zoom -= wdelta / 1000.0;
-        zoomCamera();
+        mvc.zoomView( wdelta );
 			},
 			mouseDown: function (ctx, mpos, keyState) {
 				downPos = mpos;    
@@ -410,7 +396,7 @@
 
 		var kbd = CubicVR.enums.keyboard;
 		
-    scene.camera.position = [ 0, 1000, 1000 ];
+    scene.camera.position = [ 0, 1000, 2000 ];
     var mainLoop = new CubicVR.MainLoop(function(timer, gl) {
         var seconds = timer.getSeconds();
 
@@ -459,8 +445,7 @@
             camPos = scene.camera.position,
             dt = timer.getLastUpdateSeconds();
         scene.camera.target = playerPosition;
-        scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.subtract(playerPosition,playerLastPosition));
-        zoomCamera();
+        scene.camera.trackTarget( scene.camera.target, 0.1, 2 );
         
         scene.updateShadows();
         scene.render();
