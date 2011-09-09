@@ -423,7 +423,7 @@
             var tetherDir = CubicVR.vec3.normalize(tetherVec);
             
             
-            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
+            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.3);
             player.applyImpulse(tetherImpulse);
 
             var linV = player.getLinearVelocity();
