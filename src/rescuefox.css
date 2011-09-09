@@ -19,6 +19,10 @@ body {
   height: 100%;
 }
 
+#bannerbox {
+  display: none; /* starts hidden; displayed later */
+}
+
 #secondsLeft {
   position: absolute;
   right: 30px;
