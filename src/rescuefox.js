@@ -1,4 +1,4 @@
-/*global console,paladin */
+/*global console,paladin,window */
 (function() {
 
 	var Game = function( options ) {
@@ -328,7 +328,7 @@
 			},
 			mouseWheel: function (ctx, mpos, wdelta, keyState) {
         cameraDistance -= wdelta/1000;
-        cameraDistance = Math.min(10, Math.max(1, cameraDistance ));
+        cameraDistance = Math.min(10, Math.max(1, cameraDistance ));    //shorthand to ensure that 1 < cameraDistance < 10
 			},
 			mouseDown: function (ctx, mpos, keyState) {
 				downPos = mpos;    
@@ -423,7 +423,7 @@
             var tetherDir = CubicVR.vec3.normalize(tetherVec);
             
             
-            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.03);
+            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.3);
             player.applyImpulse(tetherImpulse);
 
             var linV = player.getLinearVelocity();
@@ -447,6 +447,9 @@
             camPos = scene.camera.position,
             dt = timer.getLastUpdateSeconds();
         scene.camera.target = playerPosition;
+
+        // use trackTarget to pull the camera upto cameraDistance from the target, 
+        // but offset camera by playerPosition-playerLastPosition to avoid fishtailing
         scene.camera.trackTarget(scene.camera.target, 0.1, cameraDistance);
         scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.subtract(playerPosition,playerLastPosition));
         
@@ -526,6 +529,9 @@
           engine.tasker.terminate();
           mainLoop.setPaused(true);
           CubicVR.setMainLoop(null);
+          
+          // push the canvas behind the "game over" banner
+          CubicVR.getCanvas().style.zIndex = -1;
         }
       }
     };
@@ -541,12 +547,12 @@
 	};
 
 	document.addEventListener( 'DOMContentLoaded', function( event ) {
-		paladin.create( { debug: true },
-				function( engineInstance ) {
-			var game = new Game( { engine: engineInstance } );
-			console.log( "Starting game" );
-			game.run();
-		}
+
+		paladin.create( { debug: true }, 
+		  function( engineInstance ) {
+			  var game = new Game( { engine: engineInstance } );
+			  game.run();
+		  }
 		);
 		/*
 		paladin.create( {debug: true },
