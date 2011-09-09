@@ -540,7 +540,7 @@
           CubicVR.setMainLoop(null);
           
           // push the canvas behind the "game over" banner
-          document.getElementById("bannerBox").style.display = "none";
+          CubicVR.getCanvas().style.zIndex = -1;
         }
       }
     };
