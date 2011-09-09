@@ -1,4 +1,4 @@
-/*global console,paladin */
+/*global console,paladin,window */
 (function() {
 
 	var Game = function( options ) {
@@ -529,6 +529,9 @@
           engine.tasker.terminate();
           mainLoop.setPaused(true);
           CubicVR.setMainLoop(null);
+          
+          // push the canvas behind the "game over" banner
+          CubicVR.getCanvas().style.zIndex = -1;
         }
       }
     };
@@ -544,12 +547,12 @@
 	};
 
 	document.addEventListener( 'DOMContentLoaded', function( event ) {
-		paladin.create( { debug: true },
-				function( engineInstance ) {
-			var game = new Game( { engine: engineInstance } );
-			console.log( "Starting game" );
-			game.run();
-		}
+
+		paladin.create( { debug: true }, 
+		  function( engineInstance ) {
+			  var game = new Game( { engine: engineInstance } );
+			  game.run();
+		  }
 		);
 		/*
 		paladin.create( {debug: true },
