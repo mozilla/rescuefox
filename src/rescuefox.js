@@ -560,7 +560,6 @@
 		paladin.create( { debug: true }, 
 		  function( engineInstance ) {
 			  var game = new Game( { engine: engineInstance } );
-			  console.log( "Starting game" );
 			  game.run();
 		  }
 		);
