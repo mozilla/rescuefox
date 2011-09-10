@@ -135,6 +135,61 @@
 			}
 		};
 
+    function loadThreeMesh(model) {
+      var mesh = new CubicVR.Mesh();
+      var mat = new CubicVR.Material({
+        morph : true,
+        colorMap : true,
+        specular : [0.1, 0.1, 0.1]
+      });
+      mat.max_smooth = 80;
+      mesh.setFaceMaterial(mat);
+
+      mesh.addPoint(CubicVR.util.repackArray(model.vertices, 3, model.vertices.length / 3));
+
+      for(var i = 0, iMax = mesh.points.length; i < iMax; i++) {
+        mesh.points[i] = CubicVR.vec3.multiply(mesh.points[i], 1.0 / 100.0);
+      }
+      var faces = CubicVR.util.repackArray(model.faces, 8, model.faces.length / 8);
+      for( i = 0, iMax = faces.length; i < iMax; i++) {
+        var face = faces[i];
+        mesh.addFace([face[1], face[2], face[3]]);
+      }
+
+      if(model.morphColors) {
+        if(model.morphColors[0]) {
+          var colors = CubicVR.util.repackArray(model.morphColors[0].colors, 3,
+                                       model.morphColors[0].colors.length / 3);
+          for( i = 0, iMax = colors.length; i < iMax; i++) {
+            mesh.faces[i].setColor(colors[i], 0);
+            mesh.faces[i].setColor(colors[i], 1);
+            mesh.faces[i].setColor(colors[i], 2);
+          }
+        }
+      }
+
+      mesh.calcNormals();
+
+      // tolerance param allows the compiler to blend colors/verticies
+      // via proximity that might otherwise be split
+      var cmap = mesh.compileMap(0.2);
+
+      mesh.bindBuffer(mesh.bufferVBO(mesh.compileVBO(cmap)));
+
+      if(model.morphTargets) {
+        for( i = 0, iMax = model.morphTargets.length; i < iMax; i++) {
+          mesh.points = [];
+          mesh.addPoint(CubicVR.util.repackArray(model.morphTargets[i].vertices, 3, model.morphTargets[i].vertices.length / 3));
+          for(var j = 0, jMax = mesh.points.length; j < jMax; j++) {
+            mesh.points[j] = CubicVR.vec3.multiply(mesh.points[j], 1.0 / 100.0);
+          }
+          mesh.calcNormals();
+          mesh.addMorphTarget(mesh.bufferVBO(mesh.compileVBO(cmap)));
+        }
+      }
+
+      return mesh;
+    }
 		var setupPlayer = function (scene,physics,playerObj) {
 
 			var astronautCollada = CubicVR.loadCollada("../assets/spacesuit-scene.dae","../assets/");
@@ -162,6 +217,17 @@
 			return rigidObj;
 		};
 		
+    function setupFox() {
+      // XXX loadThreeMesh
+      
+      // XXX bind to rigid body
+
+      // XXX pick asteroid (passed in?)
+
+      // XXX associate fox with asteroid (see tethering code)    
+      
+      // XXX credit CubicVR/ROME somewhere   
+    }
 
 		//----------- SCENE INIT:START -------------
 
