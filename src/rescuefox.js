@@ -1,4 +1,4 @@
-/*global console,paladin,window */
+/*global console,paladin,window,rome_fox_model */
 (function() {
 
 	var Game = function( options ) {
@@ -217,15 +217,33 @@
 			return rigidObj;
 		};
 		
-    function setupFox() {
-      // XXX loadThreeMesh
+    function setupFox(scene, physics, foxObject) {
       
-      // XXX bind to rigid body
+      var foxMesh = loadThreeMesh(rome_fox_model);
 
       // XXX pick asteroid (passed in?)
 
       // XXX associate fox with asteroid (see tethering code)    
+            
+      var sceneObj = new CubicVR.SceneObject({
+        mesh: foxMesh,
+        position: [2,2,2],  //XXX
+        rotation: [0,0,0]
+      });
+
+      var rigidObj = new CubicVR.RigidBody(sceneObj, {
+        type: CubicVR.enums.physics.body.DYNAMIC,
+        mass: 0.1,
+        collision: foxObject.collision
+      });
       
+      sceneObj.getInstanceMaterials()[0].color =[1,0,1];
+
+      scene.bindSceneObject(sceneObj);
+      physics.bindRigidBody(rigidObj);
+      
+      return rigidObj;
+
       // XXX credit CubicVR/ROME somewhere   
     }
 
@@ -334,7 +352,11 @@
 		player.activate(true);
 		player.getSceneObject().visible = true;
 
-
+    // XXX re-using the capsule obj from the player; good idea or not?
+    var fox = setupFox(scene, physics, objlist[0]);
+    fox.activate(true);
+    fox.getSceneObject().visible = true;
+    
 		//----------- LAYOUT:START -------------
 
 
