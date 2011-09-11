@@ -89,10 +89,18 @@
 		};
 
 
+    /**
+     * Spawn asteroid abjects.
+     *
+     * @return random asteroid object to parent the fox
+     */
 		var spawnObjects = function (scene,physics,objlist) {
 
 			var nobjs = objlist.length-1;
 
+      var foxAsteroidIndex = Math.floor(Math.random() * spawnObjs);
+      var foxAsteroidObj;
+      
 			for (var i = 0; i < spawnObjs; i++) {
 				var src = objlist[i%nobjs+1];
 
@@ -128,11 +136,15 @@
                         var cdrp = rigidObj.getMass()/80;
                         sceneObj.getInstanceMaterials()[0].color = [1-cdrp,1-cdrp,1];
                     }*/
-
 				scene.bindSceneObject(sceneObj);
 				physics.bindRigidBody(rigidObj);
-
+				
+				if ( i == foxAsteroidIndex ) {
+				  foxAsteroidObj = sceneObj;
+				}
 			}
+			
+			return sceneObj;
 		};
 
     function loadThreeMesh(model) {
@@ -217,29 +229,26 @@
 			return rigidObj;
 		};
 		
-    function setupFox(scene, physics, foxObject) {
+    function setupFox(scene, physics, foxObject, parentAsteroid) {
       
       var foxMesh = loadThreeMesh(rome_fox_model);
 
-      // XXX pick asteroid (passed in?)
 
-      // XXX associate fox with asteroid (see tethering code)    
-            
       var sceneObj = new CubicVR.SceneObject({
         mesh: foxMesh,
-        position: [2,2,2],  //XXX
+        position: [2,2,2],
         rotation: [0,0,0]
       });
 
       var rigidObj = new CubicVR.RigidBody(sceneObj, {
         type: CubicVR.enums.physics.body.DYNAMIC,
-        mass: 0.1,
+        mass: 10,
         collision: foxObject.collision
       });
       
       sceneObj.getInstanceMaterials()[0].color =[1,0,1];
 
-      scene.bindSceneObject(sceneObj);
+      parentAsteroid.bindChild(sceneObj);
       physics.bindRigidBody(rigidObj);
       
       return rigidObj;
@@ -343,7 +352,7 @@
 		//----------- PARTICLES:END -------------
 
 		var objlist = generateObjects();		
-		spawnObjects(scene,physics,objlist);
+		var foxAsteroid = spawnObjects(scene,physics,objlist);
 		
 		var player = setupPlayer(scene,physics,objlist[0]);
 
@@ -353,7 +362,7 @@
 		player.getSceneObject().visible = true;
 
     // XXX re-using the capsule obj from the player; good idea or not?
-    var fox = setupFox(scene, physics, objlist[0]);
+    var fox = setupFox(scene, physics, objlist[0], foxAsteroid);
     fox.activate(true);
     fox.getSceneObject().visible = true;
     
@@ -588,7 +597,8 @@
 
         layout.render();
     });
-        
+
+/*        
 		engine.sound.Track.load({
 			url: "../assets/music/perfect-blind-ethernion-ii.ogg",
 			callback: function( track ) {
@@ -596,6 +606,7 @@
 				engine.sound.music.play( 'bg-music' );
 			}
 		});
+*/
 
     function GameTimer () {
     }
