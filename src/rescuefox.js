@@ -123,8 +123,8 @@
 					sceneObject:sceneObj, 
 					properties: {
 						type: (isStatic)?CubicVR.enums.physics.body.STATIC:CubicVR.enums.physics.body.DYNAMIC,
-								mass: (isStatic)?0:((1 + (i % 3))*20),
-										collision: src.collision                                                
+						mass: (isStatic)?0:((1 + (i % 3))*20),
+						collision: src.collision                                                
 					},
 					impulse: isStatic?[0,0,0]:[(Math.random()-0.5)*100.0,(Math.random()-0.5)*100.0,(Math.random()-0.5)*100.0]                        
 				});
@@ -236,8 +236,9 @@
 
       var sceneObj = new CubicVR.SceneObject({
         mesh: foxMesh,
-        position: [2,2,2],
-        rotation: [0,0,0]
+        position: [10, 10, 10],
+        rotation: [0,0,0],
+        scale: [0.1, 0.1, 0.1]
       });
 
       var rigidObj = new CubicVR.RigidBody(sceneObj, {
@@ -250,7 +251,7 @@
 
       parentAsteroid.bindChild(sceneObj);
       physics.bindRigidBody(rigidObj);
-      
+
       return rigidObj;
 
       // XXX credit CubicVR/ROME somewhere   
@@ -390,8 +391,17 @@
 			texture:new CubicVR.Texture('../assets/target.png')
 		});
 
+        var foxTarget = new CubicVR.View({
+            width:50,
+            height:50,
+            blend:true,
+            tint:[1.0,0.4,0.0],
+            texture:new CubicVR.Texture('../assets/fox.png')
+        });
+
 		layout.addSubview(target1);
 		layout.addSubview(target2);
+        layout.addSubview(foxTarget);
 
 		target1.x = canvas.width/2-50;
 		target1.y = canvas.height/2-50;
@@ -513,6 +523,13 @@
         if (mvc.isKeyPressed(kbd.KEY_S)) {
             player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),-0.001));
         }
+
+        // Paint target on the fox
+        var projT = CubicVR.mat4.vec3_multiply( [0, 0, 0], fox.getSceneObject().tMatrix );
+        var foxLoc = scene.camera.project( projT[0], projT[1], projT[2] );        
+        console.log( foxLoc );
+        foxTarget.x = foxLoc[0]-foxTarget.width/2;
+        foxTarget.y = foxLoc[1]-foxTarget.height/2;
 
         if (point1) {
             var tetherVec = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),player.getSceneObject().position);
