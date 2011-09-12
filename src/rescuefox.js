@@ -527,9 +527,17 @@
         // Paint target on the fox
         var projT = CubicVR.mat4.vec3_multiply( [0, 0, 0], fox.getSceneObject().tMatrix );
         var foxLoc = scene.camera.project( projT[0], projT[1], projT[2] );        
-        console.log( foxLoc );
-        foxTarget.x = foxLoc[0]-foxTarget.width/2;
-        foxTarget.y = foxLoc[1]-foxTarget.height/2;
+        var targetDir = CubicVR.vec3.normalize( CubicVR.vec3.subtract( scene.camera.position, scene.camera.target ) );
+        var foxDir = CubicVR.vec3.normalize( CubicVR.vec3.subtract( scene.camera.position, projT ) );
+        var angle = CubicVR.vec3.angle( targetDir, foxDir );
+        if( angle > Math.PI / 2.0 ) {            
+            foxTarget.x = -foxTarget.width;
+            foxTarget.y = -foxTarget.height;
+        }
+        else {
+            foxTarget.x = foxLoc[0]-foxTarget.width/2;
+            foxTarget.y = foxLoc[1]-foxTarget.height/2;
+        }
 
         if (point1) {
             var tetherVec = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),player.getSceneObject().position);
