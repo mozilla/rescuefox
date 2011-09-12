@@ -236,9 +236,9 @@
 
       var sceneObj = new CubicVR.SceneObject({
         mesh: foxMesh,
-        position: [10, 10, 10],
+        position: CubicVR.vec3.subtract( parentAsteroid.position, [20.0, 20.0, 20.0] ),
         rotation: [0,0,0],
-        scale: [0.1, 0.1, 0.1]
+        scale: [0.1,0.1,0.1]
       });
 
       var rigidObj = new CubicVR.RigidBody(sceneObj, {
@@ -249,7 +249,8 @@
       
       sceneObj.getInstanceMaterials()[0].color =[1,0,1];
 
-      parentAsteroid.bindChild(sceneObj);
+      // parentAsteroid.bindChild(sceneObj);
+      scene.bindSceneObject( sceneObj );
       physics.bindRigidBody(rigidObj);
 
       return rigidObj;
@@ -524,7 +525,6 @@
             player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),-0.001));
         }
 
-        // Paint target on the fox
         var projT = CubicVR.mat4.vec3_multiply( [0, 0, 0], fox.getSceneObject().tMatrix );
         var foxLoc = scene.camera.project( projT[0], projT[1], projT[2] );        
         var targetDir = CubicVR.vec3.normalize( CubicVR.vec3.subtract( scene.camera.position, scene.camera.target ) );
