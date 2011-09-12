@@ -1,4 +1,4 @@
-/*global console,paladin,window */
+/*global console,paladin,window,rome_fox_model */
 (function() {
 
 	var Game = function( options ) {
@@ -89,10 +89,18 @@
 		};
 
 
+    /**
+     * Spawn asteroid abjects.
+     *
+     * @return random asteroid object to parent the fox
+     */
 		var spawnObjects = function (scene,physics,objlist) {
 
 			var nobjs = objlist.length-1;
 
+      var foxAsteroidIndex = Math.floor(Math.random() * spawnObjs);
+      var foxAsteroidObj;
+      
 			for (var i = 0; i < spawnObjs; i++) {
 				var src = objlist[i%nobjs+1];
 
@@ -115,8 +123,8 @@
 					sceneObject:sceneObj, 
 					properties: {
 						type: (isStatic)?CubicVR.enums.physics.body.STATIC:CubicVR.enums.physics.body.DYNAMIC,
-								mass: (isStatic)?0:((1 + (i % 3))*20),
-										collision: src.collision                                                
+						mass: (isStatic)?0:((1 + (i % 3))*20),
+						collision: src.collision                                                
 					},
 					impulse: isStatic?[0,0,0]:[(Math.random()-0.5)*100.0,(Math.random()-0.5)*100.0,(Math.random()-0.5)*100.0]                        
 				});
@@ -128,13 +136,72 @@
                         var cdrp = rigidObj.getMass()/80;
                         sceneObj.getInstanceMaterials()[0].color = [1-cdrp,1-cdrp,1];
                     }*/
-
 				scene.bindSceneObject(sceneObj);
 				physics.bindRigidBody(rigidObj);
-
+				
+				if ( i == foxAsteroidIndex ) {
+				  foxAsteroidObj = sceneObj;
+				}
 			}
+			
+			return sceneObj;
 		};
 
+    function loadThreeMesh(model) {
+      var mesh = new CubicVR.Mesh();
+      var mat = new CubicVR.Material({
+        morph : true,
+        colorMap : true,
+        specular : [0.1, 0.1, 0.1]
+      });
+      mat.max_smooth = 80;
+      mesh.setFaceMaterial(mat);
+
+      mesh.addPoint(CubicVR.util.repackArray(model.vertices, 3, model.vertices.length / 3));
+
+      for(var i = 0, iMax = mesh.points.length; i < iMax; i++) {
+        mesh.points[i] = CubicVR.vec3.multiply(mesh.points[i], 1.0 / 100.0);
+      }
+      var faces = CubicVR.util.repackArray(model.faces, 8, model.faces.length / 8);
+      for( i = 0, iMax = faces.length; i < iMax; i++) {
+        var face = faces[i];
+        mesh.addFace([face[1], face[2], face[3]]);
+      }
+
+      if(model.morphColors) {
+        if(model.morphColors[0]) {
+          var colors = CubicVR.util.repackArray(model.morphColors[0].colors, 3,
+                                       model.morphColors[0].colors.length / 3);
+          for( i = 0, iMax = colors.length; i < iMax; i++) {
+            mesh.faces[i].setColor(colors[i], 0);
+            mesh.faces[i].setColor(colors[i], 1);
+            mesh.faces[i].setColor(colors[i], 2);
+          }
+        }
+      }
+
+      mesh.calcNormals();
+
+      // tolerance param allows the compiler to blend colors/verticies
+      // via proximity that might otherwise be split
+      var cmap = mesh.compileMap(0.2);
+
+      mesh.bindBuffer(mesh.bufferVBO(mesh.compileVBO(cmap)));
+
+      if(model.morphTargets) {
+        for( i = 0, iMax = model.morphTargets.length; i < iMax; i++) {
+          mesh.points = [];
+          mesh.addPoint(CubicVR.util.repackArray(model.morphTargets[i].vertices, 3, model.morphTargets[i].vertices.length / 3));
+          for(var j = 0, jMax = mesh.points.length; j < jMax; j++) {
+            mesh.points[j] = CubicVR.vec3.multiply(mesh.points[j], 1.0 / 100.0);
+          }
+          mesh.calcNormals();
+          mesh.addMorphTarget(mesh.bufferVBO(mesh.compileVBO(cmap)));
+        }
+      }
+
+      return mesh;
+    }
 		var setupPlayer = function (scene,physics,playerObj) {
 
 			var astronautCollada = CubicVR.loadCollada("../assets/spacesuit-scene.dae","../assets/");
@@ -162,6 +229,34 @@
 			return rigidObj;
 		};
 		
+    function setupFox(scene, physics, foxObject, parentAsteroid) {
+      
+      var foxMesh = loadThreeMesh(rome_fox_model);
+
+
+      var sceneObj = new CubicVR.SceneObject({
+        mesh: foxMesh,
+        position: CubicVR.vec3.subtract( parentAsteroid.position, [20.0, 20.0, 20.0] ),
+        rotation: [0,0,0],
+        scale: [0.1,0.1,0.1]
+      });
+
+      var rigidObj = new CubicVR.RigidBody(sceneObj, {
+        type: CubicVR.enums.physics.body.DYNAMIC,
+        mass: 10,
+        collision: foxObject.collision
+      });
+      
+      sceneObj.getInstanceMaterials()[0].color =[1,0,1];
+
+      // parentAsteroid.bindChild(sceneObj);
+      scene.bindSceneObject( sceneObj );
+      physics.bindRigidBody(rigidObj);
+
+      return rigidObj;
+
+      // XXX credit CubicVR/ROME somewhere   
+    }
 
 		//----------- SCENE INIT:START -------------
 
@@ -259,7 +354,7 @@
 		//----------- PARTICLES:END -------------
 
 		var objlist = generateObjects();		
-		spawnObjects(scene,physics,objlist);
+		var foxAsteroid = spawnObjects(scene,physics,objlist);
 		
 		var player = setupPlayer(scene,physics,objlist[0]);
 
@@ -268,7 +363,11 @@
 		player.activate(true);
 		player.getSceneObject().visible = true;
 
-
+    // XXX re-using the capsule obj from the player; good idea or not?
+    var fox = setupFox(scene, physics, objlist[0], foxAsteroid);
+    fox.activate(true);
+    fox.getSceneObject().visible = true;
+    
 		//----------- LAYOUT:START -------------
 
 
@@ -293,8 +392,17 @@
 			texture:new CubicVR.Texture('../assets/target.png')
 		});
 
+        var foxTarget = new CubicVR.View({
+            width:50,
+            height:50,
+            blend:true,
+            tint:[1.0,0.4,0.0],
+            texture:new CubicVR.Texture('../assets/fox.png')
+        });
+
 		layout.addSubview(target1);
 		layout.addSubview(target2);
+        layout.addSubview(foxTarget);
 
 		target1.x = canvas.width/2-50;
 		target1.y = canvas.height/2-50;
@@ -417,6 +525,20 @@
             player.applyImpulse(CubicVR.vec3.multiply(CubicVR.vec3.normalize(scene.camera.unProject(scene.camera.width/2,scene.camera.height/2)),-0.001));
         }
 
+        var projT = CubicVR.mat4.vec3_multiply( [0, 0, 0], fox.getSceneObject().tMatrix );
+        var foxLoc = scene.camera.project( projT[0], projT[1], projT[2] );        
+        var targetDir = CubicVR.vec3.normalize( CubicVR.vec3.subtract( scene.camera.position, scene.camera.target ) );
+        var foxDir = CubicVR.vec3.normalize( CubicVR.vec3.subtract( scene.camera.position, projT ) );
+        var angle = CubicVR.vec3.angle( targetDir, foxDir );
+        if( angle > Math.PI / 2.0 ) {            
+            foxTarget.x = -foxTarget.width;
+            foxTarget.y = -foxTarget.height;
+        }
+        else {
+            foxTarget.x = foxLoc[0]-foxTarget.width/2;
+            foxTarget.y = foxLoc[1]-foxTarget.height/2;
+        }
+
         if (point1) {
             var tetherVec = CubicVR.vec3.subtract(CubicVR.mat4.vec3_multiply(point1.localPosition,point1.rigidBody.getSceneObject().tMatrix),player.getSceneObject().position);
             var tetherDist = CubicVR.vec3.length(tetherVec);
@@ -500,7 +622,7 @@
 
         layout.render();
     });
-        
+
 		engine.sound.Track.load({
 			url: "../assets/music/perfect-blind-ethernion-ii.ogg",
 			callback: function( track ) {
