@@ -615,7 +615,6 @@
         layout.render();
     });
 
-/*        
 		engine.sound.Track.load({
 			url: "../assets/music/perfect-blind-ethernion-ii.ogg",
 			callback: function( track ) {
@@ -623,7 +622,6 @@
 				engine.sound.music.play( 'bg-music' );
 			}
 		});
-*/
 
     function GameTimer () {
     }
