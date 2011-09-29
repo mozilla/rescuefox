@@ -23,5 +23,5 @@ happened.
 
 After cloning this repo, run "make submodule" to clone or update the repos that
 this code depends on (eg CubicVR, Gladuis).  Then fire up a web-browser, and
-surf to the src/ directory to play or test changes that you've me.
+surf to the src/ directory to play or test changes that you've made.
 
