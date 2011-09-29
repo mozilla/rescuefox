@@ -676,16 +676,80 @@
 			  game.run();
 		  }
 		);
-		/*
-		paladin.create( {debug: true },
-				function( engineInstance ) {
-			var engine = engineInstance;
-			var CubicVR = engine.graphics.CubicVR;
-			var physics = new CubicVR.ScenePhysics();
-			console.log( CubicVR.CollisionMap );
-		}		
-		);
-		*/
+
+    // Thanks Paul Irish (and Google)
+    var requestAnimFrame = (function() {
+      return window.requestAnimationFrame ||
+         window.webkitRequestAnimationFrame ||
+         window.mozRequestAnimationFrame ||
+         window.oRequestAnimationFrame ||
+         window.msRequestAnimationFrame ||
+         function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+           window.setTimeout(callback, 1000/60);
+         };
+    })();
+
+    var creditsBtn = document.getElementById( 'credits-btn' ),
+        creditsContainer = document.getElementById( 'credits-container' );
+        creditsDiv = document.getElementById( 'credits' ),
+        creditsVisible = false
+        creditsTop = 0,
+        creditsStop = false;
+    
+    function keyDown( e ) {
+      if ( creditsVisible && e.which === 27 ) {
+        toggleCredits( false );
+      } //if
+    } //keyDown
+
+    var lastTime = Date.now();
+    function rollCredits() {
+      var now = Date.now();
+      creditsDiv.scrollTop = creditsTop;
+      if( creditsVisible &&
+          !creditsStop &&
+          creditsDiv.offsetHeight > creditsDiv.scrollTop ) {
+        if ( now - lastTime > 60 ) {
+          creditsTop += 1;
+          lastTime = now;
+        } //if
+        requestAnimFrame( rollCredits );
+      } //if
+    } //rollCredits
+    requestAnimFrame( rollCredits );
+
+    function stopCredits ( e ) {
+      creditsStop = true;
+    } //stopCredits
+
+    function toggleCredits( state ) {
+      if( state ) {
+        creditsContainer.style.display = "block";
+        creditsTop = 0;
+        creditsStop = false;
+        requestAnimFrame( rollCredits );
+      }
+      else {
+        creditsContainer.style.display = "none";
+      } //if
+      creditsVisible = state;
+    } //closeCredits
+
+    creditsBtn.addEventListener( 'click', function( e ) {
+      if( creditsVisible ) {
+        toggleCredits( false );
+      }
+      else {
+        toggleCredits( true );
+      } //if
+    }, false );
+
+    window.addEventListener( 'keydown', keyDown, false );
+
+    creditsDiv.addEventListener( 'mousedown', stopCredits, false );
+    creditsDiv.addEventListener( 'DOMMouseScroll', stopCredits, false );
+    creditsDiv.addEventListener( 'mousewheel', stopCredits, false );
+
 	}, false );
 
 })();
