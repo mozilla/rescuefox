@@ -1,6 +1,6 @@
 CubicVR.js: MIT
 
-ammo.js: may be custom; very liberal
+ammo.js: zlib
 
 Gladius: BSD
 
@@ -15,7 +15,7 @@ CubicVR mesh loader & skybox image: MIT
 Background music ("Perfect Blind: Three Spires", and "Ethernion II"
 by Omnitropic): http://creativecommons.org/licenses/by-nc-sa/2.5/ca/
 
-flexbox-rules.css (by Alex Russell):  license not explicit, but clearly intended
+flexbox-rules.css (by Alex Russell): license not explicit, but clearly intended
 for general use: http://infrequently.org/2009/08/css-3-progress/
 
 Fox model & textures (from 3 Dreams of Black a.k.a. ROME demo): Apache 2.0 
