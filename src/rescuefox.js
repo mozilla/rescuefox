@@ -1,6 +1,6 @@
 /*global console,paladin,window,rome_fox_model */
 (function() {
-
+    var toggleCreditsFunc;
 	var Game = function( options ) {
 
 		var engine = options.engine,
@@ -233,13 +233,16 @@
       
       var foxMesh = loadThreeMesh(rome_fox_model);
 
-
       var sceneObj = new CubicVR.SceneObject({
-        mesh: foxMesh,
         position: CubicVR.vec3.subtract( parentAsteroid.position, [20.0, 20.0, 20.0] ),
-        rotation: [0,0,0],
-        scale: [0.1,0.1,0.1]
+        rotation: [0,0,0]
       });
+      
+      sceneObj.bindChild(new CubicVR.SceneObject({
+              mesh: foxMesh,
+              scale: [0.2,0.2,0.2],
+              position: [0,-0.6,0],
+      }));
 
       var rigidObj = new CubicVR.RigidBody(sceneObj, {
         type: CubicVR.enums.physics.body.DYNAMIC,
@@ -247,7 +250,7 @@
         collision: foxObject.collision
       });
       
-      sceneObj.getInstanceMaterials()[0].color =[1,0,1];
+//      sceneObj.getInstanceMaterials()[0].color =[1,0,1];
 
       // parentAsteroid.bindChild(sceneObj);
       scene.bindSceneObject( sceneObj );
@@ -350,6 +353,9 @@
     var ps = null;
     var maxParticles = 8000;
     ps = new CubicVR.ParticleSystem(maxParticles,false,new CubicVR.Texture("../assets/beam.png"),canvas.width,canvas.height,true);
+    if (!!!ps.resize) ps.resize = ps.resizeView;
+
+		CubicVR.addResizeable(ps);
 
 		//----------- PARTICLES:END -------------
 
@@ -469,6 +475,9 @@
 
 					if (result && !point1) {
 						point1 = result;
+						if (point1.rigidBody == fox) {
+						    point1.localPosition = [0,0,0];						    
+						}
 					}
 				} 
 			},
@@ -506,13 +515,53 @@
 
 		var kbd = CubicVR.enums.keyboard;
 		
+        var tps = 0.1;
+        var ftimer = 0;
+        var numFrames = fox.getSceneObject().children[0].getMesh().morphTargetCount();
+        var morphSource=0, morphTarget=1;
+
+		function morphLoop(lus,obj) {
+    		ftimer += lus;
+            if (ftimer > tps) {
+              while (ftimer > tps) ftimer -= tps;
+              morphSource++;
+              morphTarget++;
+              if (morphSource>numFrames-1) {
+                morphSource = 0;
+              }
+              if (morphTarget>numFrames-1) {
+                morphTarget = 0;
+              }
+              obj.setMorphSource(morphSource);
+              obj.setMorphTarget(morphTarget);
+            }
+            obj.setMorphWeight(ftimer/tps);
+		    
+		}
+		
+		var youWin = false;
+		
     scene.camera.position = [ 0, 1000, 2000 ];
     var mainLoop = new CubicVR.MainLoop(function(timer, gl) {
         var seconds = timer.getSeconds();
+        
+        var foxDist = CubicVR.vec3.length(CubicVR.vec3.subtract(fox.getSceneObject().position,player.getSceneObject().position));
+        if (!youWin && foxDist < 3.5) {
+            document.getElementById("banner").style.display = "none";
+            document.getElementById("banner2").style.display = "none";
+            document.getElementById("bannerBox").style.display = "none";
+            document.getElementById("secondsLeft").style.display = "none";
+            
+            toggleCreditsFunc(true);
+            youWin = true; 
+        }
+        
+        morphLoop(timer.getLastUpdateSeconds(),fox.getSceneObject().children[0]);
 
         if (!player.isActive()) { 
             player.activate(); 
         }
+        
 
         var angV = player.getAngularVelocity();
         angV = CubicVR.vec3.subtract(angV,CubicVR.vec3.multiply(angV,timer.getLastUpdateSeconds()*5));
@@ -545,7 +594,7 @@
             var tetherDir = CubicVR.vec3.normalize(tetherVec);
             
             
-            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,0.3);
+            var tetherImpulse = CubicVR.vec3.multiply(tetherDir,timer.getLastUpdateSeconds()*2.0);
             player.applyImpulse(tetherImpulse);
 
             var linV = player.getLinearVelocity();
@@ -561,19 +610,21 @@
             }
         }
 
-        physics.stepSimulation(timer.getLastUpdateSeconds());
 
-        var playerPosition = player.getSceneObject().position,
-            playerLastPosition = player.getSceneObject().lposition,
+        var playerLastPosition = player.getSceneObject().position.slice(0),
             playerSceneObj = player.getSceneObject(),
             camPos = scene.camera.position,
             dt = timer.getLastUpdateSeconds();
-        scene.camera.target = playerPosition;
+            scene.camera.target = player.getSceneObject().position;
 
+        physics.stepSimulation(timer.getLastUpdateSeconds());
+
+        var playerPosition = player.getSceneObject().position.slice(0);
+        
         // use trackTarget to pull the camera upto cameraDistance from the target, 
         // but offset camera by playerPosition-playerLastPosition to avoid fishtailing
+        scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.multiply(CubicVR.vec3.subtract(playerPosition,playerLastPosition),0.97));
         scene.camera.trackTarget(scene.camera.target, 0.1, cameraDistance);
-        scene.camera.position = CubicVR.vec3.add(scene.camera.position,CubicVR.vec3.subtract(playerPosition,playerLastPosition));
         
         scene.updateShadows();
         scene.render();
@@ -743,6 +794,8 @@
         toggleCredits( true );
       } //if
     }, false );
+    
+    toggleCreditsFunc = toggleCredits;
 
     window.addEventListener( 'keydown', keyDown, false );
 
