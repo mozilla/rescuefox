@@ -24,3 +24,59 @@ body {
   right: 30px;
   top: 30px;
 }
+
+#credits a {
+  color: #aaa;
+}
+#credits a:hover {
+  color: #fff;
+}
+
+#credits-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  opacity: 0.6;
+}
+
+#credits-btn:hover {
+  opacity: 1.0;
+}
+
+.credits-btn {
+  cursor: pointer;
+}
+
+#credits {
+  width: 100%;
+  font-size: 50%;
+  text-align: center;
+  height: 100%;
+  overflow: -moz-scrollbars-vertical;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+#credits-container {
+  padding: 10px;
+  background: rgba( 50, 50, 50, 0.5 );
+  width: 600px;
+  height: 85%;
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  margin-left: -300px;
+  padding: 10px;
+  display: none;
+}
+
+#credits h2 {
+  margin-bottom: 0;
+}
+#credits h4 {
+  margin-top: 0.5em;
+  margin-bottom: 2.5em;
+  width: 400px;
+  text-align: center;
+  margin: auto;
+}
