@@ -25,6 +25,13 @@ body {
   top: 30px;
 }
 
+#credits a {
+  color: #aaa;
+}
+#credits a:hover {
+  color: #fff;
+}
+
 #credits-btn {
   position: absolute;
   bottom: 10px;
