@@ -1,7 +1,7 @@
 # RescueFox, a Prototype WebGL game
 
 RescueFox was written as part of the [Paladin Project](https://wiki.mozilla.org/Paladin). 
-See [our blog post](http://mozillalabs.com/blog/2011/09/rescuefox-the-value-of-a-prototype/)
+See [our blog post](https://blog.mozilla.org/labs/2011/09/rescuefox-the-value-of-a-prototype/)
 for more details about the prototype itself as well as the writing of it 
 and what we learned.
 
